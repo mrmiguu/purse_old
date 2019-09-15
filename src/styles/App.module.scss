@@ -1,0 +1,6 @@
+@import "./global.scss";
+
+#App {
+  @extend %Screen;
+  border: 1px solid black;
+}

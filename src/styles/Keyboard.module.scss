@@ -1,0 +1,51 @@
+@import "./global.scss";
+
+%All {
+  user-select: none;
+}
+
+#Keyboard {
+  @extend %All;
+  width: 0;
+  height: 0;
+}
+
+#Left {
+  @extend %All;
+  position: fixed;
+  top: 0;
+  right: 60%;
+  bottom: 0;
+  left: 0;
+  border: 1px dashed blue;
+}
+
+#Right {
+  @extend %All;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 60%;
+  border: 1px dashed darkkhaki;
+}
+
+#Top {
+  @extend %All;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 75%;
+  left: 0;
+  border: 1px dashed red;
+}
+
+#Bottom {
+  @extend %All;
+  position: fixed;
+  top: 75%;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border: 1px dashed green;
+}

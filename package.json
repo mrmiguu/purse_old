@@ -1,0 +1,14 @@
+{
+  "scripts": {
+    "start": "parcel index.html"
+  },
+  "dependencies": {
+    "animejs": "^3.1.0",
+    "react": "^16.9.0",
+    "react-dom": "^16.9.0"
+  },
+  "devDependencies": {
+    "postcss-modules": "^1.4.1",
+    "sass": "^1.22.12"
+  }
+}
