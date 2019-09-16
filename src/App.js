@@ -1,6 +1,7 @@
 import styles from './styles/App.module.scss'
 import React, { lazy, useState } from 'react'
 import { border } from './global'
+import body_1 from './Players/Bodies/1.png'
 
 let Map = lazy(() => import('./Map'))
 let Sprite = lazy(() => import('./Sprite'))
@@ -28,7 +29,9 @@ export default ({ debug }) => {
           x={x}
           y={y}
           debug={true}
-        />
+        >
+          <img src={body_1} />
+        </Sprite>
       </Map>
 
       <Keyboard
@@ -36,7 +39,7 @@ export default ({ debug }) => {
         onRight={() => setXy(([x, y]) => [x + 1, y])}
         onUp={() => setXy(([x, y]) => [x, y - 1])}
         onDown={() => setXy(([x, y]) => [x, y + 1])}
-        debug={true}
+        debug={false}
       />
 
     </div>

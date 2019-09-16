@@ -3,14 +3,14 @@ import React, { useRef, useEffect } from 'react'
 import anime from 'animejs'
 import { border } from './global'
 
-export default ({ x, y, debug, ...props }) => {
+export default ({ x, y, debug, children, ...props }) => {
   let ref = useRef()
 
   useEffect(
     () => {
       anime({
         targets: ref.current,
-        translateX: x * 32,
+        translateX: x * 32 - 16,
         translateY: y * 32 - 32,
         easing: 'linear',
         duration: 500,
@@ -26,6 +26,7 @@ export default ({ x, y, debug, ...props }) => {
       style={border(debug)}
       {...props}
     >
+      {children}
     </div>
   </>
 }
