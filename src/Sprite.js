@@ -3,7 +3,7 @@ import React, { useRef, useEffect } from 'react'
 import anime from 'animejs'
 import { border } from './global'
 
-export default ({ x, y, debug, children, ...props }) => {
+export default ({ x, y, dir, onDone, debug, children, ...props }) => {
   let ref = useRef()
 
   useEffect(
@@ -12,18 +12,22 @@ export default ({ x, y, debug, children, ...props }) => {
         targets: ref.current,
         translateX: x * 32 - 16,
         translateY: y * 32 - 32,
+        scaleX: dir,
         easing: 'linear',
         duration: 500,
       })
     },
-    [x, y]
+    [x, y, dir]
   )
 
   return <>
     <div
       ref={ref}
       id={styles.Sprite}
-      style={border(debug)}
+      style={{
+        ...border(debug),
+        // transform: `translate(${x * 32 - 16}px, ${y * 32 - 32}px)`,
+      }}
       {...props}
     >
       {children}

@@ -1,6 +1,12 @@
 #Sprite {
   position: absolute;
+  image-rendering: pixelated;
   width: 64px;
   height: 64px;
+  overflow: hidden;
   border: 1px solid;
+}
+
+#Sprite img {
+  position: absolute;
 }
