@@ -1,6 +1,7 @@
 #Sprite {
   position: absolute;
   image-rendering: pixelated;
+  image-rendering: crisp-edges;
   width: 64px;
   height: 64px;
   overflow: hidden;

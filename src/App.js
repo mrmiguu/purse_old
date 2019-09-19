@@ -13,6 +13,8 @@ let Map = lazy(() => import('./Map'))
 let Sprite = lazy(() => import('./Sprite'))
 let Keyboard = lazy(() => import('./Keyboard'))
 
+let { abs } = Math
+let { keys } = Object
 let walkCy = [1, 2, 1, 0]
 let frame = f => ({ transform: `translate(${f * -64}px, 0)` })
 
@@ -22,9 +24,9 @@ export default ({ debug }) => {
   let [step, setStep] = useState(0)
   let [map, setMap] = useState('Tutorial')
 
-  // let softRed = '#DE5246'
-  // let redHSL = hexToHSL(softRed)
-  // let carHueOff = -55
+  let softRed = '#DE5246'
+  let redHSL = hexToHSL(softRed)
+  let carHueOff = -55
 
   let rafRef = useRef()
   let tmRef = useRef()
@@ -72,13 +74,15 @@ export default ({ debug }) => {
         }}
         debug={true}
       >
+
         <Sprite
-          x={x}
-          y={y}
-          dir={dir}
+          x={10}
+          y={10}
+          dir={[1, 1]}
+          style={{ zIndex: 10 }}
           debug={false}
         >
-          {/* <span
+          <span
             id={styles.Car}
             style={{
               filter: `hue-rotate(${redHSL.h * 360 + carHueOff}deg)`,
@@ -87,8 +91,16 @@ export default ({ debug }) => {
             aria-labelledby="jsx-a11y/accessible-emoji"
           >
             🚖
-          </span> */}
+          </span>
+        </Sprite>
 
+        <Sprite
+          x={x}
+          y={y}
+          dir={dir}
+          style={{ zIndex: y }}
+          debug={false}
+        >
           <img src={arm_r_1} style={frame(walkCy[step])} />
           <img src={body_1} style={frame(walkCy[step])} />
           <img src={head_1} style={frame(walkCy[step])} />
@@ -96,6 +108,7 @@ export default ({ debug }) => {
           <img src={hair_s_b_1} style={frame(walkCy[step])} />
           <img src={arm_f_1} style={frame(walkCy[step])} />
         </Sprite>
+
       </Map>
     </div>
 
