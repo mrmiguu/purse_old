@@ -1,119 +1,7 @@
 import styles from './styles/App.module.scss'
 import React, { lazy, useState, useRef, useEffect } from 'react'
 import { border, hexToHSL } from './global'
-
-let bodyParts = {
-  arm: {
-    front: [
-      require('./players/arms/front/0.png'),
-      require('./players/arms/front/1.png'),
-      require('./players/arms/front/2.png'),
-      require('./players/arms/front/3.png'),
-      require('./players/arms/front/4.png'),
-    ],
-    rear: [
-      require('./players/arms/rear/0.png'),
-      require('./players/arms/rear/1.png'),
-      require('./players/arms/rear/2.png'),
-      require('./players/arms/rear/3.png'),
-      require('./players/arms/rear/4.png'),
-    ],
-  },
-  body: [
-    require('./players/bodies/0.png'),
-    require('./players/bodies/1.png'),
-    require('./players/bodies/2.png'),
-    require('./players/bodies/3.png'),
-    require('./players/bodies/4.png'),
-  ],
-  face: {
-    blue: [
-      require('./players/faces/blue/0.png'),
-      require('./players/faces/blue/1.png'),
-      require('./players/faces/blue/2.png'),
-      require('./players/faces/blue/3.png'),
-    ],
-    brown: [
-      require('./players/faces/brown/0.png'),
-      require('./players/faces/brown/1.png'),
-      require('./players/faces/brown/2.png'),
-      require('./players/faces/brown/3.png'),
-    ],
-    green: [
-      require('./players/faces/green/0.png'),
-      require('./players/faces/green/1.png'),
-      require('./players/faces/green/2.png'),
-      require('./players/faces/green/3.png'),
-    ],
-    red: [
-      require('./players/faces/red/0.png'),
-      require('./players/faces/red/1.png'),
-      require('./players/faces/red/2.png'),
-      require('./players/faces/red/3.png'),
-    ],
-  },
-  hair: {
-    long: {
-      black: [
-        require('./players/hair/long/black/0.png'),
-        require('./players/hair/long/black/1.png'),
-        require('./players/hair/long/black/2.png'),
-        require('./players/hair/long/black/3.png'),
-      ],
-      brown: [
-        require('./players/hair/long/brown/0.png'),
-        require('./players/hair/long/brown/1.png'),
-        require('./players/hair/long/brown/2.png'),
-        require('./players/hair/long/brown/3.png'),
-      ],
-      orange: [
-        require('./players/hair/long/orange/0.png'),
-        require('./players/hair/long/orange/1.png'),
-        require('./players/hair/long/orange/2.png'),
-        require('./players/hair/long/orange/3.png'),
-      ],
-      yellow: [
-        require('./players/hair/long/yellow/0.png'),
-        require('./players/hair/long/yellow/1.png'),
-        require('./players/hair/long/yellow/2.png'),
-        require('./players/hair/long/yellow/3.png'),
-      ],
-    },
-    short: {
-      black: [
-        require('./players/hair/short/black/0.png'),
-        require('./players/hair/short/black/1.png'),
-        require('./players/hair/short/black/2.png'),
-        require('./players/hair/short/black/3.png'),
-      ],
-      brown: [
-        require('./players/hair/short/brown/0.png'),
-        require('./players/hair/short/brown/1.png'),
-        require('./players/hair/short/brown/2.png'),
-        require('./players/hair/short/brown/3.png'),
-      ],
-      orange: [
-        require('./players/hair/short/orange/0.png'),
-        require('./players/hair/short/orange/1.png'),
-        require('./players/hair/short/orange/2.png'),
-        require('./players/hair/short/orange/3.png'),
-      ],
-      yellow: [
-        require('./players/hair/short/yellow/0.png'),
-        require('./players/hair/short/yellow/1.png'),
-        require('./players/hair/short/yellow/2.png'),
-        require('./players/hair/short/yellow/3.png'),
-      ],
-    },
-  },
-  head: [
-    require('./players/heads/0.png'),
-    require('./players/heads/1.png'),
-    require('./players/heads/2.png'),
-    require('./players/heads/3.png'),
-    require('./players/heads/4.png'),
-  ],
-}
+import pcImgs from './pcImgs'
 
 let Map = lazy(() => import('./Map'))
 let Sprite = lazy(() => import('./Sprite'))
@@ -121,7 +9,7 @@ let Keyboard = lazy(() => import('./Keyboard'))
 
 let { entries } = Object
 
-let uid = Date.now()
+let uid = Date.now() // our fake uid
 
 let walkCy = [1, 2, 1, 0]
 let frame = f => ({ transform: `translate(${f * -64}px, 0)` })
@@ -140,6 +28,14 @@ export default ({ debug }) => {
       x: x,
       y: y,
       dir: dir,
+    },
+    ['empty']: {
+      skin: 1,
+      face: [],
+      hair: [],
+      x: 4,
+      y: 4,
+      dir: [-1, 1],
     }
   }
 
@@ -195,19 +91,13 @@ export default ({ debug }) => {
       >
 
         <Sprite
-          x={4}
-          y={4}
-          dir={[-1, 1]}
-          style={{ zIndex: 4 }}
+          x={7}
+          y={5}
+          dir={[1, 1]}
+          style={{ zIndex: 5 }}
           debug={false}
         >
-          <img src={bodyParts.arm.rear[1]} style={frame(walkCy[0])} />
-          <img src={bodyParts.body[1]} style={frame(walkCy[0])} />
-          <img src={bodyParts.head[1]} style={frame(walkCy[0])} />
-          {/* <img src={bodyParts.face.green[0]} style={frame(walkCy[0])} />
-          <img src={bodyParts.hair.short.brown[1]} style={frame(walkCy[0])} /> */}
-          <img src={bodyParts.arm.front[1]} style={frame(walkCy[0])} />
-          {/* <span
+          <span
             id={styles.Car}
             style={{
               filter: `hue-rotate(${redHSL.h * 360 + carHueOff}deg)`,
@@ -216,7 +106,7 @@ export default ({ debug }) => {
             aria-labelledby="jsx-a11y/accessible-emoji"
           >
             🚖
-          </span> */}
+          </span>
         </Sprite>
 
         {
@@ -236,12 +126,12 @@ export default ({ debug }) => {
               style={{ zIndex: y }}
               debug={false}
             >
-              <img src={bodyParts.arm.rear[skin]} style={frame(walkCy[step])} />
-              <img src={bodyParts.body[skin]} style={frame(walkCy[step])} />
-              <img src={bodyParts.head[skin]} style={frame(walkCy[step])} />
-              <img src={bodyParts.face[eyeColor][eyeType]} style={frame(walkCy[step])} />
-              <img src={bodyParts.hair[hairLength][hairColor][hairType]} style={frame(walkCy[step])} />
-              <img src={bodyParts.arm.front[skin]} style={frame(walkCy[step])} />
+              <img src={pcImgs.arm.rear[skin]} style={frame(walkCy[step])} />
+              <img src={pcImgs.body[skin]} style={frame(walkCy[step])} />
+              <img src={pcImgs.head[skin]} style={frame(walkCy[step])} />
+              <img src={(pcImgs.face[eyeColor] || {})[eyeType]} style={frame(walkCy[step])} />
+              <img src={((pcImgs.hair[hairLength] || {})[hairColor] || {})[hairType]} style={frame(walkCy[step])} />
+              <img src={pcImgs.arm.front[skin]} style={frame(walkCy[step])} />
             </Sprite>
           )
         }
