@@ -2,23 +2,100 @@ import styles from './styles/App.module.scss'
 import React, { lazy, useState, useRef, useEffect } from 'react'
 import { border, hexToHSL } from './global'
 import pcImgs from './pcImgs'
+import Dialog from '@material-ui/core/Dialog'
+import TextField from '@material-ui/core/TextField'
+import Peer from 'peerjs'
+import merge from 'deepmerge'
 
 let Map = lazy(() => import('./Map'))
 let Sprite = lazy(() => import('./Sprite'))
 let Keyboard = lazy(() => import('./Keyboard'))
 
 let { entries } = Object
+let { getUserMedia } = navigator.mediaDevices
 
 let uid = Date.now() // our fake uid
 
 let walkCy = [1, 2, 1, 0]
 let frame = f => ({ transform: `translate(${f * -64}px, 0)` })
 
+let useP2P = (uid, otherUid) => {
+  let debug = true
+  let peerRef = useRef()
+  let connRef = useRef()
+  let [db, setDb] = useState({})
+
+  useEffect(
+    () => {
+      if (!uid) return
+
+      debug && console.log(`useP2P: initializing ${uid}`)
+
+      getUserMedia({ video: false, audio: true })
+      peerRef.current = new Peer(uid)
+    },
+    [uid]
+  )
+
+  useEffect(
+    () => {
+      if (!otherUid) return
+
+      debug && console.log(`useP2P: connecting ${otherUid}`)
+
+      let p = peerRef.current
+      connRef.current = p.connect(otherUid)
+    },
+    [otherUid]
+  )
+
+  useEffect(
+    () => {
+      if (!uid || !otherUid) return
+
+      debug && console.log(`useP2P: listening ${uid}<==>${otherUid})`)
+
+      let p = peerRef.current
+      let c = connRef.current = p.connect(otherUid)
+
+      p.on('connection', c => {
+        c.on('data', d => {
+          debug && console.log(`useP2P: ${JSON.stringify(db)} <-- ${JSON.stringify(d)}`)
+          setDb(db => merge(db, d))
+        })
+      })
+
+
+      c.on('open', () => {
+        setTimeout(() => {
+          let d = { [uid]: { msg: 'hi!' } }
+          setDb(db => merge(db, d))
+          c.send(d)
+        }, 1000)
+      })
+    },
+    [uid, otherUid]
+  )
+
+  return db
+}
+
 export default ({ debug }) => {
   let [[x, y], setXy] = useState([0, 0])
   let [dir, setDir] = useState([1, 1])
   let [step, setStep] = useState(0)
   let [map, setMap] = useState('Tutorial')
+
+  let [buffer, setBuffer] = useState(uid)
+  let [otherUid, setOtherUid] = useState()
+  let db = useP2P(uid, otherUid)
+
+  useEffect(
+    () => {
+      console.log(`db: ${JSON.stringify(db, null, 2)}`)
+    },
+    [db]
+  )
 
   let players = {
     [uid]: {
@@ -71,6 +148,8 @@ export default ({ debug }) => {
     },
     []
   )
+
+  let [showUid, setShowUid] = useState(true)
 
   return <>
     <div
@@ -158,5 +237,24 @@ export default ({ debug }) => {
       }}
       debug={false}
     />
+
+    <Dialog
+      open={showUid}
+      onClose={() => {
+        if (buffer === uid || !buffer.length) return
+        setShowUid(false)
+        setOtherUid(buffer)
+      }}
+    >
+      <TextField
+        value={buffer}
+        onChange={e => setBuffer(e.target.value)}
+        placeholder="Enter Their Code"
+        variant="outlined"
+        error
+      >
+        {uid}
+      </TextField>
+    </Dialog>
   </>
 }
