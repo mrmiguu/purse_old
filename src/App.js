@@ -2,9 +2,9 @@ import styles from './styles/App.module.scss'
 import React, { lazy, useState, useRef, useEffect } from 'react'
 import { border, hexToHSL } from './global'
 import pcImgs from './pcImgs'
+import Button from '@material-ui/core/Button'
 import Dialog from '@material-ui/core/Dialog'
 import TextField from '@material-ui/core/TextField'
-import Switch from '@material-ui/core/Switch'
 import useP2P from './useP2P'
 
 let Map = lazy(() => import('./Map'))
@@ -13,45 +13,60 @@ let Keyboard = lazy(() => import('./Keyboard'))
 
 let { entries } = Object
 
-let uid = Date.now() // our fake uid
+let uid = `${Date.now()}` // our fake uid
 
 let walkCy = [1, 2, 1, 0]
 let frame = f => ({ transform: `translate(${f * -64}px, 0)` })
 
 export default ({ debug }) => {
-  let [[x, y], setXy] = useState([0, 0])
+  let [xy, setXy] = useState([0, 0])
   let [dir, setDir] = useState([1, 1])
   let [step, setStep] = useState(0)
   let [map, setMap] = useState('Tutorial')
 
-  let [buffer, setBuffer] = useState(uid)
+  let [buffer, setBuffer] = useState('')
   let [otherUid, setOtherUid] = useState()
-  let [init, setInit] = useState(false)
-  let db = useP2P(uid, otherUid, init)
+  let [db, putDb] = useP2P(uid, otherUid)
 
   useEffect(
     () => {
+      if (!db) {
+        let [x, y] = xy
+        let [dx, dy] = dir
+
+        putDb({
+          players: {
+            [uid]: {
+              skin: 1,
+              face: { color: 'green', type: 0 },
+              hair: { len: 'short', color: 'brown', type: 1 },
+              x,
+              y,
+              dx,
+              dy,
+            }
+          }
+        })
+
+        return
+      }
+
       console.log(`db: ${JSON.stringify(db, null, 2)}`)
     },
     [db]
   )
 
   let players = {
-    [uid]: {
-      skin: 1,
-      face: ['green', 0],
-      hair: ['short', 'brown', 1],
-      x: x,
-      y: y,
-      dir: dir,
-    },
+    ...(db || {}).players || {},
+
     ['empty']: {
       skin: 1,
-      face: [],
-      hair: [],
+      face: {},
+      hair: {},
       x: 4,
       y: 4,
-      dir: [-1, 1],
+      dx: -1,
+      dy: 1,
     }
   }
 
@@ -73,8 +88,20 @@ export default ({ debug }) => {
         }
 
         let [vx, vy] = velRef.current
-        setXy(([x, y]) => [x + vx, y + vy])
-        setDir(dir => [vx || dir[0], vy || dir[1]])
+        setXy(xy => {
+          let [x, y] = xy
+          let x2 = x + vx
+          let y2 = y + vy
+          if (x === x2 && y === y2) return xy
+          return [x2, y2]
+        })
+        setDir(dir => {
+          let [dx, dy] = dir
+          let dx2 = vx || dx
+          let dy2 = vy || dy
+          if (dx === dx2 && dy === dy2) return dir
+          return [dx2, dy2]
+        })
         setStep(f => (f + 1) % walkCy.length)
         velRef.current = [0, 0]
 
@@ -88,7 +115,23 @@ export default ({ debug }) => {
     []
   )
 
-  let [showUid, setShowUid] = useState(true)
+  useEffect(
+    () => {
+      let [x, y] = xy
+      putDb({ players: { [uid]: { x, y } } })
+    },
+    [xy]
+  )
+
+  useEffect(
+    () => {
+      let [dx, dy] = dir
+      putDb({ players: { [uid]: { dx, dy } } })
+    },
+    [dir]
+  )
+
+  let [showUid, setShowUid] = useState(false)
 
   return <>
     <div
@@ -100,8 +143,8 @@ export default ({ debug }) => {
     >
       <Map
         load={map}
-        x={x}
-        y={y}
+        x={xy[0]}
+        y={xy[1]}
         onClick={_ => {
           setMap(m => m === 'Tiny' ? 'Tutorial' : 'Tiny')
         }}
@@ -130,17 +173,18 @@ export default ({ debug }) => {
         {
           entries(players).map(([uid, {
             skin,
-            face: [eyeColor, eyeType],
-            hair: [hairLength, hairColor, hairType],
+            face: { color: eyeColor, type: eyeType },
+            hair: { len: hairLength, color: hairColor, type: hairType },
             x,
             y,
-            dir,
+            dx,
+            dy,
           }]) =>
             <Sprite
               key={uid}
               x={x}
               y={y}
-              dir={dir}
+              dir={[dx, dy]}
               style={{ zIndex: y }}
               debug={false}
             >
@@ -177,26 +221,43 @@ export default ({ debug }) => {
       debug={false}
     />
 
+    <div id={styles.Ui}>
+
+      <TextField
+        className={styles.UidTxt}
+        defaultValue={uid}
+        variant="outlined"
+        color="secondary"
+        disabled
+      />
+
+      <Button
+        variant="contained"
+        color="secondary"
+        className={styles.ConnBtn}
+        onClick={_ => setShowUid(true)}
+      >
+        Connect
+      </Button>
+
+    </div>
+
     <Dialog
-      open={showUid}
+      open={!db && showUid}
       onClose={() => {
-        if (buffer === uid || !buffer.length) return
+        if (buffer === uid) return
+        if (buffer.length) {
+          setOtherUid(buffer)
+        }
         setShowUid(false)
-        setOtherUid(buffer)
       }}
     >
       <TextField
         value={buffer}
         onChange={e => setBuffer(e.target.value)}
-        placeholder="Enter Their Code"
+        placeholder={'Enter Their Code'}
         variant="outlined"
-      // error
-      />
-
-      <Switch
-        checked={init}
-        onChange={e => setInit(e.target.checked)}
-        color="primary"
+        error
       />
     </Dialog>
   </>

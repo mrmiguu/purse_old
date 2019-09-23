@@ -1,10 +1,10 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import Peer from 'peerjs'
 import merge from 'deepmerge'
 
 let { getUserMedia } = navigator.mediaDevices
 
-export default (uid, uid2, init) => {
+export default (uid, uid2) => {
   let debug = true
   let peerRef = useRef()
   let [conn, setConn] = useState()
@@ -46,21 +46,20 @@ export default (uid, uid2, init) => {
       if (!conn) return
 
       conn.on('data', d => {
-        debug && console.log(`useP2P: ${JSON.stringify(db)} <-- ${JSON.stringify(d)}`)
-
-        setDb(db => merge(db, d))
+        setDb(db => {
+          debug && console.log(`useP2P: ${JSON.stringify(db)} <-- ${JSON.stringify(d)}`)
+          return merge(db, d)
+        })
       })
 
       conn.on('open', () => {
         debug && console.log(`useP2P: opened ${uid}<==>${conn.peer}`)
 
-        let d = { [uid]: { msg: 'hi!' } }
-        // setDb(db => merge(db, d))
-
-        setTimeout(() => {
-          debug && console.log(`useP2P: ${JSON.stringify(d)} --> ${conn.peer}`)
-          conn.send(d)
-        }, 2000)
+        setDb(db => {
+          conn.send(db)
+          debug && console.log(`useP2P: ${JSON.stringify(db)} --> ${conn.peer}`)
+          return db
+        })
       })
 
       debug && console.log(`useP2P: initialized ${uid}<==>${conn.peer}`)
@@ -68,5 +67,14 @@ export default (uid, uid2, init) => {
     [conn]
   )
 
-  return db
+  return [
+    conn ? db : undefined,
+    useCallback(
+      d => {
+        setDb(db => merge(db, d))
+        conn && conn.send(d)
+      },
+      [conn, db],
+    )
+  ]
 }
