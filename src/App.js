@@ -38,8 +38,8 @@ export default ({ debug }) => {
           players: {
             [uid]: {
               skin: 1,
-              face: { color: 'green', type: 0 },
-              hair: { len: 'short', color: 'brown', type: 1 },
+              face: { color: 'blue', type: 0 },
+              hair: { len: 'short', color: 'yellow', type: 1 },
               x,
               y,
               dx,
