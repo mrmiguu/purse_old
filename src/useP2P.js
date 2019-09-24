@@ -1,3 +1,5 @@
+let debug = true
+
 import { useState, useRef, useEffect, useCallback } from 'react'
 import Peer from 'peerjs'
 import merge from 'deepmerge'
@@ -5,7 +7,6 @@ import merge from 'deepmerge'
 let { getUserMedia } = navigator.mediaDevices
 
 export default (uid, uid2) => {
-  let debug = true
   let peerRef = useRef()
   let [conn, setConn] = useState()
   let [db, setDb] = useState({})
@@ -67,14 +68,15 @@ export default (uid, uid2) => {
     [conn]
   )
 
-  return [
-    conn ? db : undefined,
-    useCallback(
-      d => {
-        setDb(db => merge(db, d))
-        conn && conn.send(d)
-      },
-      [conn, db],
-    )
-  ]
+  let putDb = useCallback(
+    d => {
+      setDb(db => merge(db, d))
+      conn && conn.send(d)
+    },
+    [conn, db],
+  )
+
+  return {
+    db: conn ? db : undefined, putDb,
+  }
 }

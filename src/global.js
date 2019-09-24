@@ -1,3 +1,5 @@
+let { random } = Math
+
 export let border = flag => ({ border: flag ? '' : 'none' })
 
 export let hexToHSL = hex => {
@@ -33,3 +35,8 @@ export let hexToHSL = hex => {
 
   return { h: h, s: s, l: l }
 }
+
+export let pseudoUid = () =>
+  random()
+    .toString(36)
+    .substr(2, 5)

@@ -1,6 +1,6 @@
 import styles from './styles/App.module.scss'
 import React, { lazy, useState, useRef, useEffect } from 'react'
-import { border, hexToHSL } from './global'
+import { border, hexToHSL, pseudoUid } from './global'
 import pcImgs from './pcImgs'
 import Button from '@material-ui/core/Button'
 import Dialog from '@material-ui/core/Dialog'
@@ -13,7 +13,7 @@ let Keyboard = lazy(() => import('./Keyboard'))
 
 let { entries } = Object
 
-let uid = `${Date.now()}` // our fake uid
+let uid = pseudoUid() // our fake uid
 
 let walkCy = [1, 2, 1, 0]
 let frame = f => ({ transform: `translate(${f * -64}px, 0)` })
@@ -26,7 +26,7 @@ export default ({ debug }) => {
 
   let [buffer, setBuffer] = useState('')
   let [otherUid, setOtherUid] = useState()
-  let [db, putDb] = useP2P(uid, otherUid)
+  let { db, putDb } = useP2P(uid, otherUid)
 
   useEffect(
     () => {
