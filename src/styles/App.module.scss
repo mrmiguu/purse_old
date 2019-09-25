@@ -7,22 +7,16 @@
 
 #Ui {
   @extend %Screen;
-  display: grid;
-  grid-auto-flow: column;
+  // display: grid;
+  // grid-auto-flow: column;
 }
 
 .UidTxt {
-  display: inline-block !important;
   margin: 10px !important;
-  justify-self: left;
-  align-self: start;
 }
 
 .ConnBtn {
-  position: absolute;
   margin: 10px !important;
-  justify-self: right;
-  align-self: start;
 }
 
 #Car {

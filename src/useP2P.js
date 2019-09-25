@@ -3,13 +3,19 @@ let debug = true
 import { useState, useRef, useEffect, useCallback } from 'react'
 import Peer from 'peerjs'
 import merge from 'deepmerge'
+import { pseudoUid } from './global'
+
+let uid = pseudoUid() // our fake uid
 
 let { getUserMedia } = navigator.mediaDevices
 
-export default (uid, uid2) => {
+export default (init, uids) => {
+  // debug && console.log(`useP2P()`)
+
+  let [uid2] = uids
   let peerRef = useRef()
   let [conn, setConn] = useState()
-  let [db, setDb] = useState({})
+  let [db, setDb] = useState(init && init(uid) || {})
 
   useEffect(
     () => {
@@ -77,6 +83,6 @@ export default (uid, uid2) => {
   )
 
   return {
-    db: conn ? db : undefined, putDb,
+    uid, db, putDb,
   }
 }

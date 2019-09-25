@@ -1,6 +1,6 @@
 import styles from './styles/App.module.scss'
 import React, { lazy, useState, useRef, useEffect } from 'react'
-import { border, hexToHSL, pseudoUid } from './global'
+import { border, hexToHSL } from './global'
 import pcImgs from './pcImgs'
 import Button from '@material-ui/core/Button'
 import Dialog from '@material-ui/core/Dialog'
@@ -13,62 +13,68 @@ let Keyboard = lazy(() => import('./Keyboard'))
 
 let { entries } = Object
 
-let uid = pseudoUid() // our fake uid
-
 let walkCy = [1, 2, 1, 0]
 let frame = f => ({ transform: `translate(${f * -64}px, 0)` })
+
+let faces = ['blue', 'brown', 'green', 'red']
+let hairLengths = ['long', 'short']
+let hairColors = ['black', 'brown', 'orange', 'yellow']
 
 export default ({ debug }) => {
   let [xy, setXy] = useState([0, 0])
   let [dir, setDir] = useState([1, 1])
   let [step, setStep] = useState(0)
   let [map, setMap] = useState('Tutorial')
-
   let [buffer, setBuffer] = useState('')
   let [otherUid, setOtherUid] = useState()
-  let { db, putDb } = useP2P(uid, otherUid)
+
+  let { uid, db, putDb } = useP2P(
+    uid => {
+      let h = uid.hash()
+      let hX = ~~(h / 10)
+      let hXX = ~~(hX / 10)
+      let faceColor = faces[hX % faces.length]
+
+      return {
+        players: {
+          [uid]: {
+            skin: hXX % 5,
+            face: {
+              color: faceColor,
+              type: hXX % (faceColor === 'red' ? 5 : 4)
+            },
+            hair: {
+              len: hairLengths[h % hairLengths.length],
+              color: hairColors[hX % hairColors.length],
+              type: hXX % 4
+            },
+            x: 0,
+            y: 0,
+            dx: 1,
+            dy: 1,
+          },
+
+          ['empty']: {
+            skin: 1,
+            face: {},
+            hair: {},
+            x: 4,
+            y: 4,
+            dx: -1,
+            dy: 1,
+          }
+        }
+      }
+    },
+    [otherUid]
+  )
 
   useEffect(
     () => {
-      if (!db) {
-        let [x, y] = xy
-        let [dx, dy] = dir
-
-        putDb({
-          players: {
-            [uid]: {
-              skin: 1,
-              face: { color: 'blue', type: 0 },
-              hair: { len: 'short', color: 'yellow', type: 1 },
-              x,
-              y,
-              dx,
-              dy,
-            }
-          }
-        })
-
-        return
-      }
-
       console.log(`db: ${JSON.stringify(db, null, 2)}`)
     },
     [db]
   )
-
-  let players = {
-    ...(db || {}).players || {},
-
-    ['empty']: {
-      skin: 1,
-      face: {},
-      hair: {},
-      x: 4,
-      y: 4,
-      dx: -1,
-      dy: 1,
-    }
-  }
 
   let softRed = '#DE5246'
   let redHSL = hexToHSL(softRed)
@@ -171,7 +177,7 @@ export default ({ debug }) => {
         </Sprite>
 
         {
-          entries(players).map(([uid, {
+          entries(db.players).map(([uid, {
             skin,
             face: { color: eyeColor, type: eyeType },
             hair: { len: hairLength, color: hairColor, type: hairType },
@@ -201,34 +207,28 @@ export default ({ debug }) => {
       </Map>
     </div>
 
-    <Keyboard
-      onLeft={() => {
-        let [, vy] = velRef.current
-        velRef.current = [-1, vy]
-      }}
-      onRight={() => {
-        let [, vy] = velRef.current
-        velRef.current = [1, vy]
-      }}
-      onUp={() => {
-        let [vx] = velRef.current
-        velRef.current = [vx, -1]
-      }}
-      onDown={() => {
-        let [vx] = velRef.current
-        velRef.current = [vx, 1]
-      }}
-      debug={false}
-    />
+    <div
+      id={styles.Ui}
+    >
 
-    <div id={styles.Ui}>
-
-      <TextField
-        className={styles.UidTxt}
-        defaultValue={uid}
-        variant="outlined"
-        color="secondary"
-        disabled
+      <Keyboard
+        onLeft={() => {
+          let [, vy] = velRef.current
+          velRef.current = [-1, vy]
+        }}
+        onRight={() => {
+          let [, vy] = velRef.current
+          velRef.current = [1, vy]
+        }}
+        onUp={() => {
+          let [vx] = velRef.current
+          velRef.current = [vx, -1]
+        }}
+        onDown={() => {
+          let [vx] = velRef.current
+          velRef.current = [vx, 1]
+        }}
+        debug={false}
       />
 
       <Button
@@ -240,10 +240,18 @@ export default ({ debug }) => {
         Connect
       </Button>
 
+      <TextField
+        className={styles.UidTxt}
+        defaultValue={uid}
+        variant="outlined"
+        color="secondary"
+        disabled
+      />
+
     </div>
 
     <Dialog
-      open={!db && showUid}
+      open={showUid}
       onClose={() => {
         if (buffer === uid) return
         if (buffer.length) {

@@ -46,6 +46,7 @@ export default {
       require('./players/faces/red/1.png'),
       require('./players/faces/red/2.png'),
       require('./players/faces/red/3.png'),
+      require('./players/faces/red/4.png'),
     ],
   },
   hair: {
