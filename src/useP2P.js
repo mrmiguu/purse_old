@@ -5,53 +5,21 @@ import Peer from 'peerjs'
 import merge from 'deepmerge'
 import { pseudoUid } from './global'
 
-let uid = pseudoUid() // our fake uid
-
+let { values } = Object
 let { getUserMedia } = navigator.mediaDevices
+
+let uid = pseudoUid() // our fake uid
 
 export default (init, uids) => {
   // debug && console.log(`useP2P()`)
 
   let [uid2] = uids
   let peerRef = useRef()
-  let [conn, setConn] = useState()
+  let connsRef = useRef({})
   let [db, setDb] = useState(init && init(uid) || {})
 
-  useEffect(
-    () => {
-      if (!uid) return
-
-      getUserMedia({ video: false, audio: true })
-
-      peerRef.current = new Peer(uid)
-      peerRef.current.on(
-        'connection',
-        c => {
-          debug && console.log(`useP2P: received connection from ${c.peer}`)
-          setConn(c)
-        }
-      )
-
-      debug && console.log(`useP2P: initialized ${uid}`)
-    },
-    [uid]
-  )
-
-  useEffect(
-    () => {
-      if (!uid2) return
-
-      setConn(peerRef.current.connect(uid2))
-
-      debug && console.log(`useP2P: initiated connection w/ ${uid2}`)
-    },
-    [uid2]
-  )
-
-  useEffect(
-    () => {
-      if (!conn) return
-
+  let connSetup = useCallback(
+    conn => {
       conn.on('data', d => {
         setDb(db => {
           debug && console.log(`useP2P: ${JSON.stringify(d)} <-- ${conn.peer}`)
@@ -71,7 +39,38 @@ export default (init, uids) => {
 
       debug && console.log(`useP2P: initialized ${uid}<==>${conn.peer}`)
     },
-    [conn]
+    []
+  )
+
+  useEffect(
+    () => {
+      getUserMedia({ video: false, audio: true })
+
+      peerRef.current = new Peer(uid)
+      peerRef.current.on(
+        'connection',
+        c => {
+          debug && console.log(`useP2P: received connection from ${c.peer}`)
+          connsRef.current = { ...connsRef.current, [c.peer]: c }
+          connSetup(c)
+        }
+      )
+
+      debug && console.log(`useP2P: initialized ${uid}`)
+    },
+    []
+  )
+
+  useEffect(
+    () => {
+      if (!uid2) return
+
+      connsRef.current = { ...connsRef.current, [uid2]: peerRef.current.connect(uid2) }
+      connSetup(connsRef.current[uid2])
+
+      debug && console.log(`useP2P: initiated connection w/ ${uid2}`)
+    },
+    [uid2]
   )
 
   let putDb = useCallback(
@@ -85,13 +84,13 @@ export default (init, uids) => {
       if (!d) return
 
       setDb(db => merge(db, d))
-      if (conn) {
+      for (let conn of values(connsRef.current)) {
         conn.send(d)
         debug && console.log(`useP2P: ${JSON.stringify(d)} --> ${conn.peer}`)
       }
 
     },
-    [conn, db],
+    [db],
   )
 
   return {

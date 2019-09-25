@@ -258,11 +258,13 @@ export default ({ debug }) => {
         if (buffer === uid) return
         if (buffer.length) {
           setOtherUid(buffer)
+          setBuffer('')
         }
         setShowUid(false)
       }}
     >
       <TextField
+        autoFocus
         value={buffer}
         onChange={e => setBuffer(e.target.value)}
         placeholder={'Enter Their Code'}
