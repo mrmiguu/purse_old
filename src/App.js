@@ -11,14 +11,14 @@ let Map = lazy(() => import('./Map'))
 let Sprite = lazy(() => import('./Sprite'))
 let Keyboard = lazy(() => import('./Keyboard'))
 
-let { entries } = Object
+let { keys, entries } = Object
 
 let walkCy = [1, 2, 1, 0]
 let frame = f => ({ transform: `translate(${f * -64}px, 0)` })
 
-let faces = ['blue', 'brown', 'green', 'red']
-let hairLengths = ['long', 'short']
-let hairColors = ['black', 'brown', 'orange', 'yellow']
+let faces = keys(pcImgs.face)
+let hairLengths = keys(pcImgs.hair)
+let hairColors = keys(pcImgs.hair.short)
 
 export default ({ debug }) => {
   let [xy, setXy] = useState([0, 0])
@@ -37,6 +37,7 @@ export default ({ debug }) => {
 
       return {
         players: {
+
           [uid]: {
             skin: hXX % 5,
             face: {
@@ -63,18 +64,19 @@ export default ({ debug }) => {
             dx: -1,
             dy: 1,
           }
+
         }
       }
     },
     [otherUid]
   )
 
-  useEffect(
-    () => {
-      console.log(`db: ${JSON.stringify(db, null, 2)}`)
-    },
-    [db]
-  )
+  // useEffect(
+  //   () => {
+  //     console.log(`db: ${JSON.stringify(db, null, 2)}`)
+  //   },
+  //   [db]
+  // )
 
   let softRed = '#DE5246'
   let redHSL = hexToHSL(softRed)

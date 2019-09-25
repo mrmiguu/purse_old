@@ -54,7 +54,7 @@ export default (init, uids) => {
 
       conn.on('data', d => {
         setDb(db => {
-          debug && console.log(`useP2P: ${JSON.stringify(db)} <-- ${JSON.stringify(d)}`)
+          debug && console.log(`useP2P: ${JSON.stringify(d)} <-- ${conn.peer}`)
           return merge(db, d)
         })
       })
@@ -75,9 +75,21 @@ export default (init, uids) => {
   )
 
   let putDb = useCallback(
-    d => {
+    dOrFn => {
+
+      let d =
+        typeof dOrFn === 'object' ? dOrFn
+          : typeof dOrFn === 'function' ? dOrFn(db)
+            : undefined
+
+      if (!d) return
+
       setDb(db => merge(db, d))
-      conn && conn.send(d)
+      if (conn) {
+        conn.send(d)
+        debug && console.log(`useP2P: ${JSON.stringify(d)} --> ${conn.peer}`)
+      }
+
     },
     [conn, db],
   )
