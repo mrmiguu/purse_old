@@ -28,7 +28,7 @@ export default ({ debug }) => {
   let [buffer, setBuffer] = useState('')
   let [otherUid, setOtherUid] = useState()
 
-  let { uid, db, putDb } = useP2P(
+  let { uid, db, putDb, videos } = useP2P(
     uid => {
       let h = uid.hash()
       let hX = ~~(h / 10)
@@ -68,7 +68,7 @@ export default ({ debug }) => {
         }
       }
     },
-    [otherUid]
+    otherUid
   )
 
   // useEffect(
@@ -140,6 +140,18 @@ export default ({ debug }) => {
   )
 
   let [showUid, setShowUid] = useState(false)
+
+  let videoRefs = useRef({})
+  useEffect(
+    () => {
+      console.log(`videos: ${JSON.stringify(keys(videos), null, 2)}`)
+
+      for (let [uid, myVidRef] of entries(videoRefs.current)) {
+        myVidRef.srcObject = myVidRef.srcObject || videos[uid]
+      }
+    },
+    [uid, videos]
+  )
 
   return <>
     <div
@@ -249,6 +261,19 @@ export default ({ debug }) => {
         color="secondary"
         disabled
       />
+
+      {
+        keys(videos).map(uid => (
+          <video
+            key={uid}
+            ref={ref => videoRefs.current[uid] = ref}
+            id={styles.Video}
+            autoPlay
+            playsInline
+            muted
+          />
+        ))
+      }
 
     </div>
 

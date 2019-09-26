@@ -10,10 +10,10 @@ let { getUserMedia } = navigator.mediaDevices
 
 let uid = pseudoUid() // our fake uid
 
-export default (init, uids) => {
+export default (init, uid2) => {
   // debug && console.log(`useP2P()`)
 
-  let [uid2] = uids
+  let [videos, setVideos] = useState({})
   let peerRef = useRef()
   let connsRef = useRef({})
   let [db, setDb] = useState(init && init(uid) || {})
@@ -44,7 +44,9 @@ export default (init, uids) => {
 
   useEffect(
     () => {
-      getUserMedia({ video: false, audio: true })
+      getUserMedia({ video: true, audio: true }).then(stream => {
+        setVideos(videos => ({ ...videos, [uid]: stream }))
+      })
 
       peerRef.current = new Peer(uid)
       peerRef.current.on(
@@ -63,9 +65,47 @@ export default (init, uids) => {
 
   useEffect(
     () => {
+      if (!videos[uid]) return
+
+      peerRef.current.on('call', call => {
+        call.answer(videos[uid])
+
+        call.on('stream', stream => {
+          debug && console.log(`useP2P: stream <-- ${call.peer} (answered)`)
+          setVideos(videos => ({ ...videos, [call.peer]: stream }))
+        })
+
+        debug && console.log(`useP2P: answered call from ${call.peer}`)
+      })
+    },
+    [videos]
+  )
+
+  useEffect(
+    () => {
+      if (!videos[uid] || !uid2 || videos[uid2]) return
+
+      let call = peerRef.current.call(uid2, videos[uid])
+
+      call.on('stream', stream => {
+        debug && console.log(`useP2P: stream <-- ${call.peer} (picked up)`)
+        setVideos(videos => ({ ...videos, [call.peer]: stream }))
+      })
+
+      debug && console.log(`useP2P: calling ${uid2}...`)
+    },
+    [videos, uid2]
+  )
+
+  useEffect(
+    () => {
       if (!uid2) return
 
-      connsRef.current = { ...connsRef.current, [uid2]: peerRef.current.connect(uid2) }
+      connsRef.current = {
+        ...connsRef.current,
+        [uid2]: peerRef.current.connect(uid2)
+      }
+
       connSetup(connsRef.current[uid2])
 
       debug && console.log(`useP2P: initiated connection w/ ${uid2}`)
@@ -94,6 +134,6 @@ export default (init, uids) => {
   )
 
   return {
-    uid, db, putDb,
+    uid, videos, db, putDb,
   }
 }

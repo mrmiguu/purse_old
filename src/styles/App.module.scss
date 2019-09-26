@@ -11,6 +11,17 @@
   // grid-auto-flow: column;
 }
 
+#Video {
+  // position: relative;
+  // display: inline-block;
+  // top: 65px;
+  margin: 10px;
+  width: auto;
+  height: 128px;
+  border-radius: 4px;
+  filter: drop-shadow(0 2px 1px rgba(0, 0, 0, 0.5));
+}
+
 .UidTxt {
   margin: 10px !important;
 }
