@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "start": "parcel index.html"
+    "start": "parcel index.html --https"
   },
   "dependencies": {
     "@material-ui/core": "^4.4.2",
