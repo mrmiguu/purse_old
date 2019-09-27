@@ -1,7 +1,6 @@
 import styles from './styles/App.module.scss'
 import React, { lazy, useState, useRef, useEffect } from 'react'
 import { border, hexToHSL } from './global'
-import pcImgs from './pcImgs'
 import Button from '@material-ui/core/Button'
 import Dialog from '@material-ui/core/Dialog'
 import TextField from '@material-ui/core/TextField'
@@ -13,57 +12,39 @@ let Keyboard = lazy(() => import('./Keyboard'))
 
 let { keys, entries } = Object
 
-let walkCy = [1, 2, 1, 0]
-let frame = f => ({ transform: `translate(${f * -64}px, 0)` })
-
-let faces = keys(pcImgs.face)
-let hairLengths = keys(pcImgs.hair)
-let hairColors = keys(pcImgs.hair.short)
+let colors = ['#FF4C3E', '#E4A392', '#F1DCB7', '#1DA261', '#2498FD', '#740099', '#E5B6C9']
 
 export default ({ debug }) => {
   let [xy, setXy] = useState([0, 0])
   let [dir, setDir] = useState([1, 1])
-  let [step, setStep] = useState(0)
   let [map, setMap] = useState('Tutorial')
   let [buffer, setBuffer] = useState('')
   let [otherUid, setOtherUid] = useState()
 
   let { uid, db, putDb, videos } = useP2P(
     uid => {
-      let h = uid.hash()
-      let hX = ~~(h / 10)
-      let hXX = ~~(hX / 10)
-      let faceColor = faces[hX % faces.length]
-
       return {
         players: {
 
           [uid]: {
-            skin: hXX % 5,
-            face: {
-              color: faceColor,
-              type: hXX % (faceColor === 'red' ? 5 : 4)
-            },
-            hair: {
-              len: hairLengths[h % hairLengths.length],
-              color: hairColors[hX % hairColors.length],
-              type: hXX % 4
-            },
+            color: colors[uid.hash() % 4],
             x: 0,
             y: 0,
             dx: 1,
             dy: 1,
           },
 
-          ['empty']: {
-            skin: 1,
-            face: {},
-            hair: {},
-            x: 4,
-            y: 4,
-            dx: -1,
-            dy: 1,
-          }
+          // ...[0,0,0,0,0,0,0,0,0,0].map((_, i) => (
+          //   {
+          //     [`car_${i}`]: {
+          //       color: colors[uid.hash() % 4],
+          //       x: 0,
+          //       y: 0,
+          //       dx: 1,
+          //       dy: 1,
+          //     }
+          //   }
+          // ))
 
         }
       }
@@ -110,7 +91,6 @@ export default ({ debug }) => {
           if (dx === dx2 && dy === dy2) return dir
           return [dx2, dy2]
         })
-        setStep(f => (f + 1) % walkCy.length)
         velRef.current = [0, 0]
 
         rafRef.current = window.requestAnimationFrame(step)
@@ -171,30 +151,9 @@ export default ({ debug }) => {
         debug={true}
       >
 
-        <Sprite
-          x={7}
-          y={5}
-          dir={[1, 1]}
-          style={{ zIndex: 5 }}
-          debug={false}
-        >
-          <span
-            id={styles.Car}
-            style={{
-              filter: `hue-rotate(${redHSL.h * 360 + carHueOff}deg)`,
-            }}
-            role="img"
-            aria-labelledby="jsx-a11y/accessible-emoji"
-          >
-            🚖
-          </span>
-        </Sprite>
-
         {
           entries(db.players).map(([uid, {
-            skin,
-            face: { color: eyeColor, type: eyeType },
-            hair: { len: hairLength, color: hairColor, type: hairType },
+            color,
             x,
             y,
             dx,
@@ -208,12 +167,16 @@ export default ({ debug }) => {
               style={{ zIndex: y }}
               debug={false}
             >
-              <img src={pcImgs.arm.rear[skin]} style={frame(walkCy[step])} />
-              <img src={pcImgs.body[skin]} style={frame(walkCy[step])} />
-              <img src={pcImgs.head[skin]} style={frame(walkCy[step])} />
-              <img src={(pcImgs.face[eyeColor] || {})[eyeType]} style={frame(walkCy[step])} />
-              <img src={((pcImgs.hair[hairLength] || {})[hairColor] || {})[hairType]} style={frame(walkCy[step])} />
-              <img src={pcImgs.arm.front[skin]} style={frame(walkCy[step])} />
+              <span
+                id={styles.Car}
+                style={{
+                  filter: `hue-rotate(${hexToHSL(color).h * 360 + carHueOff}deg)`,
+                }}
+                role="img"
+                aria-labelledby="jsx-a11y/accessible-emoji"
+              >
+                🚖
+              </span>
             </Sprite>
           )
         }
@@ -263,14 +226,14 @@ export default ({ debug }) => {
       />
 
       {
-        keys(videos).map(uid => (
+        keys(videos).map(uidN => (
           <video
-            key={uid}
-            ref={ref => videoRefs.current[uid] = ref}
+            key={uidN}
+            ref={ref => videoRefs.current[uidN] = ref}
             id={styles.Video}
             autoPlay
             playsInline
-            muted
+            muted={uidN === uid}
           />
         ))
       }
