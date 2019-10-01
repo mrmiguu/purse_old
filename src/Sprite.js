@@ -10,12 +10,23 @@ export default ({ x, y, dir, debug, style, children, ...props }) => {
     () => {
       anime({
         targets: ref.current,
-        translateX: x * 32 - 16,
-        translateY: y * 32 - 32,
+        duration: 1500,
+
+        translateX: {
+          value: x * 32 - 16,
+          easing: 'linear',
+          duration: 250,
+        },
+
+        translateY: {
+          value: y * 32 - 32,
+          easing: 'linear',
+          duration: 250,
+        },
+
         scaleX: dir[0],
         // scaleY: dir[1],
-        // easing: 'linear',
-        duration: 1500,
+
       })
     },
     [x, y, dir]

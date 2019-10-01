@@ -1,6 +1,6 @@
 import styles from './styles/App.module.scss'
 import React, { lazy, useState, useRef, useEffect } from 'react'
-import { border, hexToHSL } from './global'
+import { border } from './global'
 import pcImgs from './pcImgs'
 import Button from '@material-ui/core/Button'
 import Dialog from '@material-ui/core/Dialog'
@@ -12,6 +12,7 @@ let Sprite = lazy(() => import('./Sprite'))
 let Keyboard = lazy(() => import('./Keyboard'))
 
 let { keys, entries } = Object
+let { min } = Math
 
 let walkCy = [1, 2, 1, 0]
 let frame = f => ({ transform: `translate(${f * -64}px, 0)` })
@@ -21,7 +22,7 @@ let hairLengths = keys(pcImgs.hair)
 let hairColors = keys(pcImgs.hair.short)
 
 export default ({ debug }) => {
-  let [xy, setXy] = useState([0, 0])
+  let [xy, setXy] = useState([0, 14])
   let [dir, setDir] = useState([1, 1])
   let [step, setStep] = useState(0)
   let [map, setMap] = useState('Tutorial')
@@ -78,10 +79,6 @@ export default ({ debug }) => {
   //   [db]
   // )
 
-  let softRed = '#DE5246'
-  let redHSL = hexToHSL(softRed)
-  let carHueOff = -55
-
   let rafRef = useRef()
   let tmRef = useRef()
   let velRef = useRef([0, 0])
@@ -99,18 +96,18 @@ export default ({ debug }) => {
         setXy(xy => {
           let [x, y] = xy
           let x2 = x + vx
-          let y2 = y + vy
+          let y2 = min(y + (vy || 1), 15 - 1)
           if (x === x2 && y === y2) return xy
           return [x2, y2]
         })
         setDir(dir => {
           let [dx, dy] = dir
           let dx2 = vx || dx
-          let dy2 = vy || dy
+          let dy2 = (vy || 1) || dy
           if (dx === dx2 && dy === dy2) return dir
           return [dx2, dy2]
         })
-        setStep(f => (f + 1) % walkCy.length)
+        setStep(f => (f + 0) % walkCy.length)
         velRef.current = [0, 0]
 
         rafRef.current = window.requestAnimationFrame(step)
@@ -171,25 +168,6 @@ export default ({ debug }) => {
         debug={true}
       >
 
-        <Sprite
-          x={7}
-          y={5}
-          dir={[1, 1]}
-          style={{ zIndex: 5 }}
-          debug={false}
-        >
-          <span
-            id={styles.Car}
-            style={{
-              filter: `hue-rotate(${redHSL.h * 360 + carHueOff}deg)`,
-            }}
-            role="img"
-            aria-labelledby="jsx-a11y/accessible-emoji"
-          >
-            🚖
-          </span>
-        </Sprite>
-
         {
           entries(db.players).map(([uid, {
             skin,
@@ -245,7 +223,7 @@ export default ({ debug }) => {
         debug={false}
       />
 
-      <Button
+      {/* <Button
         variant="contained"
         color="secondary"
         className={styles.ConnBtn}
@@ -263,21 +241,21 @@ export default ({ debug }) => {
       />
 
       {
-        keys(videos).map(uid => (
+        keys(videos).map(uidN => (
           <video
-            key={uid}
-            ref={ref => videoRefs.current[uid] = ref}
+            key={uidN}
+            ref={ref => videoRefs.current[uidN] = ref}
             id={styles.Video}
             autoPlay
             playsInline
-            muted
+            muted={uidN === uid}
           />
         ))
-      }
+      } */}
 
     </div>
 
-    <Dialog
+    {/* <Dialog
       open={showUid}
       onClose={() => {
         if (buffer === uid) return
@@ -296,6 +274,6 @@ export default ({ debug }) => {
         variant="outlined"
         error
       />
-    </Dialog>
+    </Dialog> */}
   </>
 }

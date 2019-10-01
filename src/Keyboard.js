@@ -2,17 +2,24 @@ import styles from './styles/Keyboard.module.scss'
 import React, { useRef, useEffect } from 'react'
 import { border } from './global'
 
+let { keys } = Object
+
 export default ({ onLeft, onRight, onUp, onDown, debug }) => {
   let ref = useRef()
 
   useEffect(
     () => {
-      let onKeyDown = e => ({
+      let keyToAct = {
         ArrowLeft: onLeft,
         ArrowRight: onRight,
         ArrowUp: onUp,
         ArrowDown: onDown,
-      }[e.key] || (_ => _))()
+      }
+
+      let onKeyDown = e => {
+        let fn = keyToAct[e.key]
+        fn && fn()
+      }
 
       window.addEventListener('keydown', onKeyDown)
       return () => window.removeEventListener('keydown', onKeyDown)

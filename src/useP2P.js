@@ -44,9 +44,9 @@ export default (init, uid2) => {
 
   useEffect(
     () => {
-      getUserMedia({ video: true, audio: true }).then(stream => {
-        setVideos(videos => ({ ...videos, [uid]: stream }))
-      })
+      // getUserMedia({ video: true, audio: true }).then(stream => {
+      //   setVideos(videos => ({ ...videos, [uid]: stream }))
+      // })
 
       peerRef.current = new Peer(uid)
       peerRef.current.on(

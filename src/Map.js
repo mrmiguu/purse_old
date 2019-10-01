@@ -29,10 +29,16 @@ export default ({ load, x, y, debug, children, ...props }) => {
     () => {
       anime({
         targets: ref.current,
-        translateX: wndW / 2 - x * 32 - 32 / 2,
-        translateY: wndH / 2 - y * 32 - 32 / 2,
-        easing: 'linear',
-        duration: 500,
+        translateX: {
+          value: wndW / 2 - x * 32 - 32 / 2,
+          easing: 'spring(1, 30, 10, 0)',
+          duration: 1500,
+        },
+        translateY: {
+          value: wndH / 2 - y * 32 - 32 / 2,
+          easing: 'linear',
+          duration: 1000,
+        },
       })
     },
     [x, y, wndW, wndH]
