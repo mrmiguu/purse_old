@@ -16,13 +16,26 @@ export default ({ onLeft, onRight, onUp, onDown, debug }) => {
         ArrowDown: onDown,
       }
 
-      let onKeyDown = e => {
-        let fn = keyToAct[e.key]
-        fn && fn()
+      let onKey = e => {
+        let onKey = keyToAct[e.key]
+
+        if (typeof onKey === 'function') {
+          let offKey = onKey()
+
+          if (typeof offKey === 'function') {
+
+            let offKeyCb = () => {
+              offKey()
+              window.removeEventListener('keyup', offKeyCb)
+            }
+
+            window.addEventListener('keyup', offKeyCb)
+          }
+        }
       }
 
-      window.addEventListener('keydown', onKeyDown)
-      return () => window.removeEventListener('keydown', onKeyDown)
+      window.addEventListener('keydown', onKey)
+      return () => window.removeEventListener('keydown', onKey)
     },
     []
   )
@@ -36,6 +49,10 @@ export default ({ onLeft, onRight, onUp, onDown, debug }) => {
         id={styles.Left}
         onMouseDown={onLeft}
         onTouchStart={onLeft}
+        onMouseUp={() => {
+          let offLeft = onLeft()
+          typeof offLeft === 'function' && offLeft()
+        }}
         style={border(debug)}
       ></div>
 
@@ -43,6 +60,10 @@ export default ({ onLeft, onRight, onUp, onDown, debug }) => {
         id={styles.Right}
         onMouseDown={onRight}
         onTouchStart={onRight}
+        onMouseUp={() => {
+          let offRight = onRight()
+          typeof offRight === 'function' && offRight()
+        }}
         style={border(debug)}
       ></div>
 
@@ -50,6 +71,10 @@ export default ({ onLeft, onRight, onUp, onDown, debug }) => {
         id={styles.Top}
         onMouseDown={onUp}
         onTouchStart={onUp}
+        onMouseUp={() => {
+          let offUp = onUp()
+          typeof offUp === 'function' && offUp()
+        }}
         style={border(debug)}
       ></div>
 
@@ -57,6 +82,10 @@ export default ({ onLeft, onRight, onUp, onDown, debug }) => {
         id={styles.Bottom}
         onMouseDown={onDown}
         onTouchStart={onDown}
+        onMouseUp={() => {
+          let offDown = onDown()
+          typeof offDown === 'function' && offDown()
+        }}
         style={border(debug)}
       ></div>
     </div>

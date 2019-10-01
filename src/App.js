@@ -108,7 +108,7 @@ export default ({ debug }) => {
           return [dx2, dy2]
         })
         setStep(f => (f + 0) % walkCy.length)
-        velRef.current = [0, 0]
+        // velRef.current = [0, 0]
 
         rafRef.current = window.requestAnimationFrame(step)
         tmRef.current = tm
@@ -204,22 +204,27 @@ export default ({ debug }) => {
     >
 
       <Keyboard
+
         onLeft={() => {
-          let [, vy] = velRef.current
-          velRef.current = [-1, vy]
+          velRef.current = [-1, velRef.current[1]]
+          return () => velRef.current = [0, velRef.current[1]]
         }}
+
         onRight={() => {
-          let [, vy] = velRef.current
-          velRef.current = [1, vy]
+          velRef.current = [1, velRef.current[1]]
+          return () => velRef.current = [0, velRef.current[1]]
         }}
+
         onUp={() => {
-          let [vx] = velRef.current
-          velRef.current = [vx, -1]
+          velRef.current = [velRef.current[0], -1]
+          return () => velRef.current = [velRef.current[0], 0]
         }}
+
         onDown={() => {
-          let [vx] = velRef.current
-          velRef.current = [vx, 1]
+          velRef.current = [velRef.current[0], 1]
+          return () => velRef.current = [velRef.current[0], 0]
         }}
+
         debug={false}
       />
 
